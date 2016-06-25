@@ -21,6 +21,14 @@ query {
     id
   }
 }
+      `,
+      postMessage: gql`
+mutation postMessage($thread: ID, $text: String!) {
+  postMessage(thread: $thread, text: $text) {
+    thread
+    id
+  }
+}
       `
     }
   }),

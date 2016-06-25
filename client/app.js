@@ -33,7 +33,8 @@ export default function main ({DOM, ROUTER, GRAPHQL}) {
       fwitch(m.value.where, {
         'THREADS': vrender.list.bind(null, {threads}),
         'THREAD': vrender.thread.bind(null, {thread: threads[m.value.id]})
-      })
+      }),
+      vrender.create()
     ])
   ,
     match$,
@@ -42,7 +43,12 @@ export default function main ({DOM, ROUTER, GRAPHQL}) {
     .map(x => x || vrender.empty())
 
   let graphql$ = most.merge(
-    most.of({query: 'fetchThreads'})
+    most.of({query: 'fetchThreads'}),
+    DOM.select('form.create').events('submit')
+      .tap(e => e.preventDefault())
+      .map(e => e.target.querySelector('input').value)
+      .filter(v => v)
+      .map(v => ({mutation: 'postMessage', variables: {text: v}}))
   )
   let notify$ = most.merge(
     response$

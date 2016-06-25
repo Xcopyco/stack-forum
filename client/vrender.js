@@ -7,7 +7,7 @@ export function list (data) {
 }
 
 export function thread (data) {
-  let messages = data.messages.slice(0, 7)
+  let messages = (data.messages || []).slice(0, 7)
   let random = Math.random() * 7
   var rotateLeft = Math.random() <= 0.5
   var rotate = rotateLeft ? -random : random
@@ -61,5 +61,12 @@ export function nav () {
         h('a', 'you')
       ])
     ])
+  ])
+}
+
+export function create () {
+  return h('form.create', [
+    h('input'),
+    h('button', 'post message')
   ])
 }

@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/graphql-go/graphql"
+	"github.com/kr/pretty"
+	"github.com/lucsky/cuid"
 	"gopkg.in/pg.v4"
 )
 
@@ -63,24 +65,51 @@ func makeSchema() graphql.SchemaConfig {
 				// "message": &graphql.Field{},
 			},
 		}),
-		// Mutation: graphql.NewObject(graphql.ObjectConfig{
-		// 	Name: "RootMutation",
-		// 	Fields: graphql.Fields{
-		// 		"postMessage": &graphql.Field{
-		// 			Type: messageType,
-		// 		},
-		// 	},
-		// }),
+		Mutation: graphql.NewObject(graphql.ObjectConfig{
+			Name: "RootMutation",
+			Fields: graphql.Fields{
+				"postMessage": &graphql.Field{
+					Type: messageType,
+					Args: graphql.FieldConfigArgument{
+						"text": &graphql.ArgumentConfig{
+							Type: graphql.NewNonNull(graphql.String),
+						},
+						"thread": &graphql.ArgumentConfig{
+							Type:        graphql.ID,
+							Description: "the id of the thread to which this message will be posted.",
+						},
+					},
+					Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+						message := Message{
+							Owner: "fiatjaf@gmail.com",
+						}
+
+						t, _ := params.Args["text"].(string)
+						message.Text = t
+
+						if threadInput, ok := params.Args["thread"]; ok {
+							message.Thread = threadInput.(string)
+						} else {
+							message.Thread = cuid.New()
+						}
+						err := db.Create(&message)
+
+						pretty.Log(message)
+						return message, err
+					},
+				},
+			},
+		}),
 	}
 }
 
 type Thread struct {
-	Id string
+	Id string `json:"id"`
 }
 
 type Message struct {
-	Id     int64
-	Thread string
-	Owner  string
-	Text   string
+	Id     int64  `json:"id"`
+	Thread string `json:"thread"`
+	Owner  string `json:"owner"`
+	Text   string `json:"text"`
 }
