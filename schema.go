@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/graphql/language/ast"
 	"github.com/kr/pretty"
 	"github.com/lucsky/cuid"
 	"gopkg.in/pg.v4"
@@ -29,6 +30,19 @@ var threadType = graphql.NewObject(graphql.ObjectConfig{
 		"id": &graphql.Field{Type: graphql.ID},
 		"messages": &graphql.Field{
 			Type: graphql.NewList(messageType),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				cols := make([]string, len(p.Info.FieldASTs[0].SelectionSet.Selections))
+				for i, f := range p.Info.FieldASTs[0].SelectionSet.Selections {
+					cols[i] = f.(*ast.Field).Name.Value
+				}
+
+				messages := []Message{}
+				err := db.Model(&Message{}).
+					Column(cols...).
+					Where("thread = ?", p.Source.(Thread).Id).
+					Select(&messages)
+				return messages, err
+			},
 		},
 	},
 })
@@ -104,12 +118,12 @@ func makeSchema() graphql.SchemaConfig {
 }
 
 type Thread struct {
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }
 
 type Message struct {
-	Id     int64  `json:"id"`
-	Thread string `json:"thread"`
-	Owner  string `json:"owner"`
-	Text   string `json:"text"`
+	Id     int64  `json:"id,omitempty"`
+	Thread string `json:"thread,omitempty"`
+	Owner  string `json:"owner,omitempty"`
+	Text   string `json:"text,omitempty"`
 }
