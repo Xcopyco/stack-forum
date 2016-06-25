@@ -7,8 +7,6 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/language/ast"
-	"github.com/kr/pretty"
-	"github.com/lucsky/cuid"
 	"gopkg.in/pg.v4"
 )
 
@@ -19,7 +17,7 @@ var messageType = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		"id":     &graphql.Field{Type: graphql.ID},
 		"thread": &graphql.Field{Type: graphql.ID},
-		"user":   &graphql.Field{Type: graphql.String},
+		"owner":  &graphql.Field{Type: graphql.String},
 		"text":   &graphql.Field{Type: graphql.String},
 	},
 })
@@ -76,7 +74,19 @@ func makeSchema() graphql.SchemaConfig {
 						return threads, err
 					},
 				},
-				// "message": &graphql.Field{},
+				"thread": &graphql.Field{
+					Type: threadType,
+					Args: graphql.FieldConfigArgument{
+						"id": &graphql.ArgumentConfig{
+							Type:        graphql.NewNonNull(graphql.ID),
+							Description: "the id of the thread to fetch.",
+						},
+					},
+					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+						id, _ := p.Args["id"].(string)
+						return Thread{Id: id}, nil
+					},
+				},
 			},
 		}),
 		Mutation: graphql.NewObject(graphql.ObjectConfig{
@@ -89,26 +99,21 @@ func makeSchema() graphql.SchemaConfig {
 							Type: graphql.NewNonNull(graphql.String),
 						},
 						"thread": &graphql.ArgumentConfig{
-							Type:        graphql.ID,
+							Type:        graphql.NewNonNull(graphql.ID),
 							Description: "the id of the thread to which this message will be posted.",
 						},
 					},
 					Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+						text, _ := params.Args["text"].(string)
+						thread, _ := params.Args["thread"].(string)
+
 						message := Message{
-							Owner: "fiatjaf@gmail.com",
+							Owner:  "fiatjaf@gmail.com",
+							Text:   text,
+							Thread: thread,
 						}
 
-						t, _ := params.Args["text"].(string)
-						message.Text = t
-
-						if threadInput, ok := params.Args["thread"]; ok {
-							message.Thread = threadInput.(string)
-						} else {
-							message.Thread = cuid.New()
-						}
 						err := db.Create(&message)
-
-						pretty.Log(message)
 						return message, err
 					},
 				},

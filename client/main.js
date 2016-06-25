@@ -25,8 +25,19 @@ query {
   }
 }
       `,
+      fetchThread: gql`
+query fetchThread($id: ID!) {
+  thread(id: $id) {
+    id
+    messages {
+      owner
+      text
+    }
+  }
+}
+      `,
       postMessage: gql`
-mutation postMessage($thread: ID, $text: String!) {
+mutation postMessage($thread: ID!, $text: String!) {
   postMessage(thread: $thread, text: $text) {
     thread
     id

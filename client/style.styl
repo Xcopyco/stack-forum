@@ -2,51 +2,71 @@
   box-sizing border-box
 
 #main
-  margin 20px
+  margin 10px
 
-ul, li
-  padding 0
-  margin 0
-  list-style none
-  display block
+main
+  margin 10px
 
-ul.panel
-  display -ms-flexbox
-  -ms-flex-direction column
-  -ms-flex-wrap wrap
-  display flex
-  flex-direction column
-  flex-wrap wrap
-  height 100vh
+  section
+    margin 20px
+  article
+    margin 30px
 
-  @media (max-width: 500px)
-    height auto
+section
+  ul, li
+    padding 0
+    margin 0
+    list-style none
+    display block
 
-li.item
-  width 33.3%
-  max-width 300px
+  ul.panel
+    display -ms-flexbox
+    -ms-flex-direction column
+    -ms-flex-wrap wrap
+    display flex
+    flex-direction column
+    flex-wrap wrap
+    height calc(100vh - 200px)
 
-  @media (max-width: 800px)
-    width 50%
+    @media (max-width: 500px)
+      height auto
 
-  @media (max-width: 500px)
-    width 100%
+  li.item
+    width 33.3%
+    max-width 300px
 
-ul.thread
-  position relative
-  margin 1.8em
+    @media (max-width: 800px)
+      width 50%
 
+    @media (max-width: 500px)
+      width 100%
+
+  ul.thread
+    position relative
+    margin 1.8em
+
+  li.message
+    position relative
+
+    &:nth-child(n+2)
+      position absolute
+      background-color #fff
+      border 1px solid rgba(0, 0, 0, 0.150)
+
+article
+  ul
+    list-style none
+
+  ul, li
+    padding 0
+    margin 0
+
+  li.message
+    margin 2px
+
+form.create,
 li.message
   background #fff
   padding 1em
   border 1px solid rgba(0, 0, 0, 0.150)
-
-  position relative
-  -webkit-box-shadow 1px 1px 2px rgba(0, 0, 0, 0.2)
-  -moz-box-shadow 1px 1px 2px rgba(0, 0, 0, 0.2)
   box-shadow 1px 1px 2px rgba(0, 0, 0, 0.2)
-
-  &:nth-child(n+2)
-    position absolute
-    background-color #fff
-    border 1px solid rgba(0, 0, 0, 0.150)

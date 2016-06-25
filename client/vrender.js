@@ -1,12 +1,27 @@
+import cuid from 'cuid'
 import {h} from '@motorcycle/dom'
 
 export function list (data) {
-  return h('ul.panel', data.threads.map(item =>
-    h('li.item', [thread(item)])
-  ))
+  return h('main', [
+    h('section', [
+      h('ul.panel', Object.keys(data.threads).map(id =>
+        h('li.item', [thread(data.threads[id])])
+      )),
+      create()
+    ])
+  ])
 }
 
-export function thread (data) {
+export function standalone (data) {
+  return h('main', [
+    h('article', [
+      thread(data, true),
+      create(data.id)
+    ])
+  ])
+}
+
+export function thread (data, standalone = false) {
   let messages = data.messages.slice(0, 7)
   let random = Math.random() * 7
   var rotateLeft = Math.random() <= 0.5
@@ -14,15 +29,13 @@ export function thread (data) {
   var color = 255
 
   return h('ul.thread', {
-    hook: {
-      insert (vnode) {
-        vnode.elm.style
-      }
+    props: {
+      id: data.id
     }
   }, messages.map((message, i) => {
     color = color - i * 10
 
-    let v = h('li.message', {
+    let props = standalone ? {} : {
       style: {
         'z-index': `${-i + 10}`,
         'top': '2px',
@@ -40,13 +53,13 @@ export function thread (data) {
           vnode.elm.style.top = `${(vnode.elm.parentNode.offsetHeight - vnode.elm.offsetHeight) / 2}px`
         }
       }
-    }, message.text)
+    }
 
     let random = Math.random() * 7
     rotateLeft = !rotateLeft
     rotate = (rotateLeft ? -random : random) % 360
 
-    return v
+    return h('li.message', props, message.text)
   }))
 }
 
@@ -58,15 +71,16 @@ export function nav () {
   return h('nav', [
     h('ul', [
       h('li', [
-        h('a', 'you')
+        h('a', {props: {href: '#/'}}, 'you')
       ])
     ])
   ])
 }
 
-export function create () {
+export function create (id = cuid.slug()) {
   return h('form.create', [
-    h('input'),
+    h('input', {props: {name: 'id', type: 'hidden', value: id}}),
+    h('input', {props: {name: 'text'}}),
     h('button', 'post message')
   ])
 }
