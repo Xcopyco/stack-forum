@@ -1,32 +1,59 @@
 import most from 'most'
 import hold from '@most/hold'
 import fwitch from 'fwitch'
+import {h} from '@motorcycle/dom'
 
 import * as vrender from './vrender'
 
-export default function main ({DOM, ROUTER, ITEMS}) {
+export default function main ({DOM, ROUTER, GRAPHQL}) {
   let match$ = hold(
     ROUTER.define({
-      '/items': {where: 'ITEMS'},
-      '/item/:post': id => ({where: 'ITEM', id})
+      '/': {where: 'THREADS'},
+      '/thread': id => ({where: 'THREAD', id})
     })
   )
     .startWith({value: {where: 'ITEMS'}})
 
-  let vtree$ = most.combine((m, items) =>
-    fwitch(m.value.where, {
-      'ITEMS': vrender.list.bind(null, {threads: items}),
-      'ITEM': vrender.thread.bind(null, {thread: items[m.value.id]})
+  let response$ = GRAPHQL
+    .flatMap(r$ => r$ .recoverWith(err => most.of({errors: [err.message]})))
+
+  let data$ = response$
+    .filter(({errors}) => {
+      if (errors && errors.length) {
+        console.log('errors:', errors)
+        return false
+      }
+      return true
     })
-  , match$, ITEMS)
+    .map(({data}) => data)
+
+  let vtree$ = most.combine((m, threads) =>
+    h('div', [
+      vrender.nav(),
+      fwitch(m.value.where, {
+        'THREADS': vrender.list.bind(null, {threads}),
+        'THREAD': vrender.thread.bind(null, {thread: threads[m.value.id]})
+      })
+    ])
+  ,
+    match$,
+    data$.map(r => r.threads).filter(t => t).startWith([])
+  )
     .map(x => x || vrender.empty())
 
-  let href$ = most.merge(DOM.select('a[href^="#/"]').events('click'))
-    .map(e => e.target.getAttribute('href').slice(1))
+  let graphql$ = most.merge(
+    most.of({query: 'fetchThreads'})
+  )
+  let notify$ = most.merge(
+    response$
+      .filter(({errors}) => errors && errors.length)
+      .flatMap(({errors}) => most.from(errors.map(e => e.message)))
+  )
 
   return {
     DOM: vtree$,
-    ROUTER: most.empty()
-      .merge(href$)
+    ROUTER: most.empty(),
+    GRAPHQL: graphql$,
+    NOTIFICATION: notify$
   }
 }

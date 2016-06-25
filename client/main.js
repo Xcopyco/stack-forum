@@ -19,9 +19,6 @@ Cycle.run(app, {
 query {
   threads {
     id
-    messages {
-      text
-    }
   }
 }
       `

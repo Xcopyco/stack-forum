@@ -53,3 +53,13 @@ export function thread (data) {
 export function empty () {
   return h('div')
 }
+
+export function nav () {
+  return h('nav', [
+    h('ul', [
+      h('li', [
+        h('a', 'you')
+      ])
+    ])
+  ])
+}
