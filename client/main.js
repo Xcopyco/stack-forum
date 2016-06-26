@@ -16,10 +16,10 @@ Cycle.run(app, {
     endpoint: '/graphql',
     templates: {
       fetchThreads: gql`
-query {
+query fetchThreads {
   threads {
     id
-    messages {
+    messages(order: "DESC") {
       text
     }
   }
@@ -29,7 +29,8 @@ query {
 query fetchThread($id: ID!) {
   thread(id: $id) {
     id
-    messages {
+    messages(order: "ASC") {
+      id
       owner
       text
     }

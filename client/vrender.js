@@ -4,7 +4,7 @@ export function list (data, typed) {
   return h('main', [
     h('section', [
       h('ul.panel', Object.keys(data.threads).map(id =>
-        h('li.item', [thread(data.threads[id])])
+        h('li.item', {key: id}, [thread(data.threads[id])])
       )),
       create(null, typed)
     ])
@@ -34,7 +34,7 @@ export function thread (data, standalone = false) {
   }, messages.map((message, i) => {
     color = color - i * 10
 
-    let props = standalone ? {} : {
+    let props = standalone ? {key: message.id} : {
       style: {
         'z-index': `${-i + 10}`,
         'top': '2px',
@@ -90,6 +90,6 @@ export function create (id = '', typed = '') {
         }
       }
     }),
-    h('button', 'post message')
+    h('button', id ? 'send' : 'create new stack')
   ])
 }

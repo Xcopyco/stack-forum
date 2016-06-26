@@ -6,11 +6,7 @@
 
 main
   margin 10px
-
-  section
-    margin 20px
-  article
-    margin 30px
+  padding 0
 
 section
   ul, li
@@ -56,6 +52,7 @@ section
 article
   ul
     list-style none
+    max-width 90vw
 
   ul, li
     padding 0
@@ -72,5 +69,13 @@ li.message
   box-shadow 1px 1px 2px rgba(0, 0, 0, 0.2)
 
 form.create
+  max-width 90vw
+
   input, button, textarea
     margin 0 12px
+
+  input, textarea
+    width calc(70% - 24px)
+
+  button
+    width calc(30% - 24px)

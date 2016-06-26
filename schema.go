@@ -28,15 +28,29 @@ var threadType = graphql.NewObject(graphql.ObjectConfig{
 		"id": &graphql.Field{Type: graphql.ID},
 		"messages": &graphql.Field{
 			Type: graphql.NewList(messageType),
+			Args: graphql.FieldConfigArgument{
+				"order": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "DESC: last messages first, and vice-versa with ASC.",
+				},
+			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				cols := make([]string, len(p.Info.FieldASTs[0].SelectionSet.Selections))
 				for i, f := range p.Info.FieldASTs[0].SelectionSet.Selections {
 					cols[i] = f.(*ast.Field).Name.Value
 				}
 
+				var order string
+				if o, ok := p.Args["order"]; ok {
+					order = o.(string)
+				} else {
+					order = "ASC"
+				}
+
 				messages := []Message{}
 				err := db.Model(&Message{}).
 					Column(cols...).
+					Order("id "+order).
 					Where("thread = ?", p.Source.(Thread).Id).
 					Select(&messages)
 				return messages, err

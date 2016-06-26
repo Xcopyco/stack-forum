@@ -82,7 +82,10 @@ export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
       .constant({query: 'fetchThreads'}),
     match$
       .filter(m => m.value.where === 'THREAD')
-      .map(m => ({query: 'fetchThread', variables: {id: m.value.id}})),
+      .map(m => ({
+        query: 'fetchThread',
+        variables: {id: m.value.id}
+      })),
     messageSubmit$
       .map(e => ({
         text: e.target.querySelector('input[name="text"]').value,
