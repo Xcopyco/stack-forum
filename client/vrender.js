@@ -1,22 +1,21 @@
-import cuid from 'cuid'
 import {h} from '@motorcycle/dom'
 
-export function list (data) {
+export function list (data, typed) {
   return h('main', [
     h('section', [
       h('ul.panel', Object.keys(data.threads).map(id =>
         h('li.item', [thread(data.threads[id])])
       )),
-      create()
+      create(null, typed)
     ])
   ])
 }
 
-export function standalone (data) {
+export function standalone (data, typed) {
   return h('main', [
     h('article', [
       thread(data, true),
-      create(data.id)
+      create(data.id, typed)
     ])
   ])
 }
@@ -77,10 +76,20 @@ export function nav () {
   ])
 }
 
-export function create (id = cuid.slug()) {
+export function create (id = '', typed = '') {
   return h('form.create', [
     h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
-    h('input', {props: {name: 'text'}}),
+    h('input', {
+      props: {name: 'text', value: typed},
+      hook: {
+        insert (vnode) {
+          vnode.elm.value = typed
+        },
+        postpatch (vnode) {
+          vnode.elm.value = typed
+        }
+      }
+    }),
     h('button', 'post message')
   ])
 }

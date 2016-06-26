@@ -1,3 +1,4 @@
+import cuid from 'cuid'
 import most from 'most'
 import hold from '@most/hold'
 import fwitch from 'fwitch'
@@ -5,7 +6,7 @@ import {h} from '@motorcycle/dom'
 
 import * as vrender from './vrender'
 
-export default function main ({DOM, ROUTER, GRAPHQL}) {
+export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
   let match$ = hold(
     ROUTER.define({
       '/': {where: 'THREADS'},
@@ -53,20 +54,27 @@ export default function main ({DOM, ROUTER, GRAPHQL}) {
     return map
   }, {})
 
-  let vtree$ = most.combine((m, threads) =>
+  let vtree$ = most.combine(({value}, threads, storage) =>
     h('div', [
       vrender.nav(),
-      fwitch(m.value.where, {
-        'THREADS': () => vrender.list({threads}),
+      fwitch(value.where, {
+        'THREADS': () => vrender.list({threads}, storage['typed.']),
         'THREAD': () =>
-          threads[m.value.id] ? vrender.standalone(threads[m.value.id]) : vrender.empty()
+          threads[value.id]
+            ? vrender.standalone(threads[value.id], storage[`typed.${value.id}`])
+            : vrender.empty()
       })
     ])
   ,
     match$,
-    threadMap$
+    threadMap$,
+    STORAGE.all$
   )
     .map(x => x || vrender.empty())
+
+  let messageSubmit$ = DOM.select('form.create').events('submit')
+    .tap(e => e.preventDefault())
+    .multicast()
 
   let graphql$ = most.merge(
     match$
@@ -75,11 +83,10 @@ export default function main ({DOM, ROUTER, GRAPHQL}) {
     match$
       .filter(m => m.value.where === 'THREAD')
       .map(m => ({query: 'fetchThread', variables: {id: m.value.id}})),
-    DOM.select('form.create').events('submit')
-      .tap(e => e.preventDefault())
+    messageSubmit$
       .map(e => ({
         text: e.target.querySelector('input[name="text"]').value,
-        thread: e.target.querySelector('input[name="thread"]').value
+        thread: e.target.querySelector('input[name="thread"]').value || cuid.slug()
       }))
       .filter(({text}) => text)
       .map(variables => ({mutation: 'postMessage', variables}))
@@ -99,6 +106,19 @@ export default function main ({DOM, ROUTER, GRAPHQL}) {
       postMessage$.map(message => `/thread/${message.thread}`)
     ),
     GRAPHQL: graphql$,
-    NOTIFICATION: notify$
+    NOTIFICATION: notify$,
+    STORAGE: most.merge(
+      DOM.select('form.create input[name="text"]').events('input')
+        .map(e => ({
+          [`typed.${e.target.parentNode.querySelector('[name="thread"]').value}`]:
+            e.target.value
+        })),
+      messageSubmit$
+        .map(e => ({
+          text: e.target.querySelector('input[name="text"]').value,
+          thread: e.target.querySelector('input[name="thread"]').value
+        }))
+        .map(e => ({[`typed.${e.thread}`]: ''}))
+    )
   }
 }
