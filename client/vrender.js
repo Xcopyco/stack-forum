@@ -79,7 +79,7 @@ export function nav () {
 
 export function create (id = cuid.slug()) {
   return h('form.create', [
-    h('input', {props: {name: 'id', type: 'hidden', value: id}}),
+    h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
     h('input', {props: {name: 'text'}}),
     h('button', 'post message')
   ])

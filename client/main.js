@@ -40,7 +40,8 @@ query fetchThread($id: ID!) {
 mutation postMessage($thread: ID!, $text: String!) {
   postMessage(thread: $thread, text: $text) {
     thread
-    id
+    text
+    owner
   }
 }
       `
