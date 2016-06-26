@@ -1,4 +1,10 @@
 import {h} from '@motorcycle/dom'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  linkify: true,
+  breaks: true
+})
 
 export function list (data, typed) {
   return h('main', [
@@ -54,11 +60,14 @@ export function thread (data, standalone = false) {
       }
     }
 
+    props.props = {}
+    props.props.innerHTML = md.render(message.text)
+
     let random = Math.random() * 7
     rotateLeft = !rotateLeft
     rotate = (rotateLeft ? -random : random) % 360
 
-    return h('li.message', props, message.text)
+    return h('li.message', props)
   }))
 }
 
@@ -80,7 +89,7 @@ export function create (id = '', typed = '') {
   return h('form.create', [
     h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
     h('textarea', {
-      props: {name: 'text', value: typed, placeholder: 'Ctrl+Enter to send.'},
+      props: {name: 'text', value: typed, placeholder: 'Ctrl+Enter to send. Markdown accepted.'},
       hook: {
         create (_, vnode) {
           vnode.elm.addEventListener('input', e => {
