@@ -79,9 +79,15 @@ export function nav () {
 export function create (id = '', typed = '') {
   return h('form.create', [
     h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
-    h('input', {
+    h('textarea', {
       props: {name: 'text', value: typed},
       hook: {
+        create (_, vnode) {
+          vnode.elm.addEventListener('input', e => {
+            e.target.style.height = '1px'
+            e.target.style.height = e.target.scrollHeight + 5 + 'px'
+          })
+        },
         insert (vnode) {
           vnode.elm.value = typed
         },
