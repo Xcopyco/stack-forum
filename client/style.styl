@@ -8,6 +8,9 @@ main
   margin 10px
   padding 0
 
+main, section, article
+  width 100vw
+
 section
   ul, li
     padding 0
@@ -40,16 +43,22 @@ section
   ul.thread
     position relative
     margin 2.7em 1em
+    text-align center
 
   li.message
     position relative
     max-height 200px
     overflow hidden
+    display inline-block
+    text-align left
 
     &:nth-child(n+2)
       position absolute
       background-color #fff
       border 1px solid rgba(0, 0, 0, 0.150)
+
+  li.message p:last-child
+    margin 0
 
 article
   ul
@@ -71,7 +80,9 @@ li.message
   box-shadow 1px 1px 2px rgba(0, 0, 0, 0.2)
 
 form.create
-  max-width 90vw
+  width 90vw
+  margin auto
+  position fixed
 
   input, button, textarea
     margin 0 12px

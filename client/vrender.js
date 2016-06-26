@@ -39,6 +39,9 @@ export function thread (data, standalone = false) {
     }
   }, messages.map((message, i) => {
     color = color - i * 10
+    let padding = message.text.length > 20
+      ? parseInt(Math.random() * 6 + (i * 2 + 2))
+      : '10px'
 
     let props = standalone ? {key: message.id} : {
       style: {
@@ -48,7 +51,7 @@ export function thread (data, standalone = false) {
         'transform': `rotate(${parseInt(rotate)}deg)`,
         'background-color': `rgb(${color}, ${color}, ${color})`,
         'opacity': `${(10 - i) / 10}`,
-        'padding': `${parseInt(Math.random() * 6 + (i * 2 + 2))}px`
+        'padding': `${padding}px`
       },
       hook: {
         insert (vnode) {
