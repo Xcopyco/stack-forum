@@ -80,7 +80,7 @@ export function create (id = '', typed = '') {
   return h('form.create', [
     h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
     h('textarea', {
-      props: {name: 'text', value: typed},
+      props: {name: 'text', value: typed, placeholder: 'Ctrl+Enter to send.'},
       hook: {
         create (_, vnode) {
           vnode.elm.addEventListener('input', e => {

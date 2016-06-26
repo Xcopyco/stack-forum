@@ -72,8 +72,15 @@ export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
   )
     .map(x => x || vrender.empty())
 
-  let messageSubmit$ = DOM.select('form.create').events('submit')
-    .tap(e => e.preventDefault())
+  let messageSubmit$ = most.merge(
+      DOM.select('form.create').events('submit')
+        .tap(e => e.preventDefault())
+        .map(e => e.target),
+      DOM.select('form.create textarea').events('keydown')
+        .filter(e => e.ctrlKey && e.keyCode === 13)
+        .tap(e => e.preventDefault())
+        .map(e => e.target.parentNode)
+    )
     .multicast()
 
   let graphql$ = most.merge(
@@ -87,9 +94,9 @@ export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
         variables: {id: m.value.id}
       })),
     messageSubmit$
-      .map(e => ({
-        text: e.target.querySelector('input[name="text"]').value,
-        thread: e.target.querySelector('input[name="thread"]').value || cuid.slug()
+      .map(form => ({
+        text: form.querySelector('[name="text"]').value,
+        thread: form.querySelector('[name="thread"]').value || cuid.slug()
       }))
       .filter(({text}) => text)
       .map(variables => ({mutation: 'postMessage', variables}))
@@ -111,17 +118,17 @@ export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
     GRAPHQL: graphql$,
     NOTIFICATION: notify$,
     STORAGE: most.merge(
-      DOM.select('form.create input[name="text"]').events('input')
+      DOM.select('form.create [name="text"]').events('input')
         .map(e => ({
           [`typed.${e.target.parentNode.querySelector('[name="thread"]').value}`]:
             e.target.value
         })),
       messageSubmit$
-        .map(e => ({
-          text: e.target.querySelector('input[name="text"]').value,
-          thread: e.target.querySelector('input[name="thread"]').value
+        .map(form => ({
+          text: form.querySelector('[name="text"]').value,
+          thread: form.querySelector('[name="thread"]').value
         }))
-        .map(e => ({[`typed.${e.thread}`]: ''}))
+        .map(v => ({[`typed.${v.thread}`]: ''}))
     )
   }
 }
