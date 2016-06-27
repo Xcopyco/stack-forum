@@ -1,5 +1,12 @@
 import {h} from '@motorcycle/dom'
 import MarkdownIt from 'markdown-it'
+import mem from 'mem'
+
+var memcache = {
+  has (k) { return this[k] },
+  get (k) { return this[k] },
+  set (k, v) { this[k] = v }
+}
 
 const md = new MarkdownIt({
   linkify: true,
@@ -10,7 +17,9 @@ export function list (data, typed) {
   return h('main', [
     h('section', [
       h('ul.panel', Object.keys(data.threads).map(id =>
-        h('li.item', {key: id}, [thread(data.threads[id])])
+        h('li.item', {key: id}, [
+          thread(data.threads[id], false, data.threads[id].messages.length)
+        ])
       )),
       create(null, typed)
     ])
@@ -20,14 +29,18 @@ export function list (data, typed) {
 export function standalone (data, typed) {
   return h('main', [
     h('article', [
-      thread(data, true),
+      thread(data, true, data.messages.length),
       create(data.id, typed)
     ])
   ])
 }
 
-export function thread (data, standalone = false) {
-  let messages = data.messages.slice(0, 7)
+const thread = mem(_thread, memcache)
+
+function _thread (data, standalone = false) {
+  let messages = standalone
+    ? data.messages.reverse()
+    : data.messages.slice(0, 7)
   let random = Math.random() * 7
   var rotateLeft = Math.random() <= 0.5
   var rotate = rotateLeft ? -random : random
@@ -88,7 +101,7 @@ export function nav () {
   ])
 }
 
-export function create (id = '', typed = '') {
+function create (id = '', typed = '') {
   return h('form.create', [
     h('input', {props: {name: 'thread', type: 'hidden', value: id}}),
     h('textarea', {

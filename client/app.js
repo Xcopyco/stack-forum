@@ -36,7 +36,7 @@ export default function main ({DOM, ROUTER, GRAPHQL, STORAGE}) {
       // a single message
       let thread = map[cur.thread] || {id: cur.thread}
       thread.messages = thread.messages || []
-      thread.messages.push(cur)
+      thread.messages.unshift(cur)
       map[cur.thread] = thread
     } else if (Array.isArray(cur)) {
       // array of threads

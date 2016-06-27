@@ -29,7 +29,7 @@ query fetchThreads {
 query fetchThread($id: ID!) {
   thread(id: $id) {
     id
-    messages(order: "ASC") {
+    messages(order: "DESC") {
       id
       owner
       text
