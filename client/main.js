@@ -34,6 +34,7 @@ query fetchThread($id: ID!) {
     id
     messages(order: "DESC") {
       id
+      created
       text
       owner {
         name
@@ -48,7 +49,11 @@ mutation postMessage($thread: ID!, $text: String!) {
   postMessage(thread: $thread, text: $text) {
     thread
     text
-    owner
+    created
+    owner {
+      name
+      pic
+    }
   }
 }
       `

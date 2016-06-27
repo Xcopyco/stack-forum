@@ -2,11 +2,13 @@ package main
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	l "log"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/graphql-go/graphql"
 	"gopkg.in/pg.v4"
@@ -25,7 +27,17 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 var messageType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Message",
 	Fields: graphql.Fields{
-		"id":     &graphql.Field{Type: graphql.ID},
+		"id": &graphql.Field{Type: graphql.ID},
+		"created": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if c, ok := p.Source.(Message); ok {
+					return c.Created.Unix(), nil
+				} else {
+					return 0, errors.New("FAILED")
+				}
+			},
+		},
 		"thread": &graphql.Field{Type: graphql.ID},
 		"owner": &graphql.Field{
 			Type: userType,
@@ -155,14 +167,15 @@ func makeSchema() graphql.SchemaConfig {
 }
 
 type Thread struct {
-	Id string `json:"id,omitempty"`
+	Id string `json:"id,omitempty" sql:",pk"`
 }
 
 type Message struct {
-	Id     int64  `json:"id,omitempty"`
-	Thread string `json:"thread,omitempty"`
-	Owner  string `json:"owner,omitempty"`
-	Text   string `json:"text,omitempty"`
+	Id      int64     `json:"id,omitempty" sql:",pk"`
+	Created time.Time `json:"created,omitempty" sql:",null"`
+	Thread  string    `json:"thread,omitempty"`
+	Owner   string    `json:"owner,omitempty"`
+	Text    string    `json:"text,omitempty"`
 }
 
 type User struct {

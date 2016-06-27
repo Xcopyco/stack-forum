@@ -1,5 +1,6 @@
 import {h} from '@motorcycle/dom'
 import MarkdownIt from 'markdown-it'
+import vague from 'vague-time'
 import mem from 'mem'
 
 var memcache = {
@@ -87,8 +88,9 @@ function _thread (data, standalone = false) {
       ? [
         text,
         h('div.user', [
-          message.owner.pic ? h('img.pic', {props: {src: message.owner.pic}}) : null,
-          name
+          message.owner.pic && h('img.pic', {props: {src: message.owner.pic}}),
+          name,
+          message.created && vague.get({to: new Date(message.created * 1000)})
         ])
       ]
       : [
