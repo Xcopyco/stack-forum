@@ -21,6 +21,9 @@ query fetchThreads {
     id
     messages(order: "DESC") {
       text
+      owner {
+        name
+      }
     }
   }
 }
@@ -31,8 +34,11 @@ query fetchThread($id: ID!) {
     id
     messages(order: "DESC") {
       id
-      owner
       text
+      owner {
+        name
+        pic
+      }
     }
   }
 }

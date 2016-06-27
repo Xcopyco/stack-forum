@@ -1,24 +1,45 @@
 package main
 
 import (
+	"crypto/md5"
+	"fmt"
+	"io"
 	l "log"
 	"net/url"
 	"os"
 
 	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/graphql/language/ast"
 	"gopkg.in/pg.v4"
 )
 
 var db *pg.DB
+
+var userType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "User",
+	Fields: graphql.Fields{
+		"name": &graphql.Field{Type: graphql.String},
+		"pic":  &graphql.Field{Type: graphql.String},
+	},
+})
 
 var messageType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Message",
 	Fields: graphql.Fields{
 		"id":     &graphql.Field{Type: graphql.ID},
 		"thread": &graphql.Field{Type: graphql.ID},
-		"owner":  &graphql.Field{Type: graphql.String},
-		"text":   &graphql.Field{Type: graphql.String},
+		"owner": &graphql.Field{
+			Type: userType,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				email := p.Source.(Message).Owner
+				h := md5.New()
+				io.WriteString(h, email)
+				return User{
+					Name: email,
+					Pic:  fmt.Sprintf("https://s.gravatar.com/avatar/%x?s=200&d=retro", h.Sum(nil)),
+				}, nil
+			},
+		},
+		"text": &graphql.Field{Type: graphql.String},
 	},
 })
 
@@ -35,10 +56,7 @@ var threadType = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				cols := make([]string, len(p.Info.FieldASTs[0].SelectionSet.Selections))
-				for i, f := range p.Info.FieldASTs[0].SelectionSet.Selections {
-					cols[i] = f.(*ast.Field).Name.Value
-				}
+				cols := selectedFields(p)
 
 				var order string
 				if o, ok := p.Args["order"]; ok {
@@ -145,4 +163,9 @@ type Message struct {
 	Thread string `json:"thread,omitempty"`
 	Owner  string `json:"owner,omitempty"`
 	Text   string `json:"text,omitempty"`
+}
+
+type User struct {
+	Name string `json:"name"`
+	Pic  string `json:"pic"`
 }

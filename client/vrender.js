@@ -76,14 +76,26 @@ function _thread (data, standalone = false) {
       }
     }
 
-    props.props = {}
-    props.props.innerHTML = md.render(message.text)
-
     let random = Math.random() * 7
     rotateLeft = !rotateLeft
     rotate = (rotateLeft ? -random : random) % 360
 
-    return h('li.message', props)
+    let name = h('div.name', {props: {title: message.owner.name}}, message.owner.name)
+    let text = h('div.text', {props: {innerHTML: md.render(message.text)}})
+
+    return h('li.message', props, standalone
+      ? [
+        text,
+        h('div.user', [
+          message.owner.pic ? h('img.pic', {props: {src: message.owner.pic}}) : null,
+          name
+        ])
+      ]
+      : [
+        name,
+        text
+      ]
+    )
   }))
 }
 
