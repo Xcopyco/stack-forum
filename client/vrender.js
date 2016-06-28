@@ -1,7 +1,9 @@
 import {h} from '@motorcycle/dom'
 import MarkdownIt from 'markdown-it'
+import findall from 'findall-string'
 import vague from 'vague-time'
 import mem from 'mem'
+import cx from 'class-set'
 
 var memcache = {
   has (k) { return this[k] },
@@ -86,12 +88,20 @@ function _thread (data, standalone = false) {
 
     return h('li.message', props, standalone
       ? [
-        text,
-        h('div.user', [
+        name,
+        h('div', {props: {
+          className: cx({
+            'user': true,
+            'tiny': message.text.length < 180 && findall('\n', message.text).length < 4,
+            'small': message.text.length < 500,
+            'normal': message.text.length >= 500
+          })
+        }}, [
           message.owner.pic && h('img.pic', {props: {src: message.owner.pic}}),
           name,
-          message.created && vague.get({to: new Date(message.created * 1000)})
-        ])
+          message.created && h('div.time', vague.get({to: new Date(message.created * 1000)}))
+        ]),
+        text
       ]
       : [
         name,

@@ -5,11 +5,12 @@
   margin 10px
 
 main
-  margin 10px
+  margin 10px auto
+  max-width 100vw
   padding 0
 
 main, section, article
-  width 100vw
+  width 780px
 
 section
   ul, li
@@ -58,9 +59,6 @@ section
       background-color #fff
       border 1px solid rgba(0, 0, 0, 0.150)
 
-  li.message p:last-child
-    margin 0
-
 article
   ul
     list-style none
@@ -76,7 +74,18 @@ article
     overflow-x hidden
     overflow-y auto
 
-    .name
+    @media (max-width: 800px)
+      & > .name
+        display block
+      & > .user
+        display none
+    @media (min-width: 800px)
+      & > .name
+        display none
+      & > .user
+        display block
+
+    .name, .time
       overflow hidden
       text-overflow ellipsis
 
@@ -84,12 +93,42 @@ article
     & > .name
       width 100%
     .user
-      width 119px
-      float left
-    .text:first-child:not(:last-child)
-      width calc(100% - 126px)
-      margin-right 7px
-      float left
+      float right
+      padding 10px
+      background inherit
+
+      &.normal:not(.small):not(.tiny)
+        width 119px
+
+      &.small:not(.tiny)
+        width 200px
+
+        & > *
+          float left
+        img
+          width calc(30% - 5px)
+          margin-right 5px
+        .name, .time
+          width 70%
+          display block
+
+      &.tiny
+        text-align right
+        width 265px
+        height 2em
+        overflow hidden
+        margin-bottom 14px
+
+        & > *
+          height 1em
+          display inline
+          margin-left 3px
+
+        img
+          vertical-align text-bottom
+
+    .user > .text
+      display inline
 
 li.message,
 form.create
@@ -105,9 +144,12 @@ li.message
     font-weight bold
   .text
     font-weight normal
+  p:last-child
+    margin 0
 
 form.create
-  width 90vw
+  width inherit
+  max-width 100%
   margin 10px auto 0 auto
   position fixed
 
